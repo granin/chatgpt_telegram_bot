@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+parent_dir = str(Path(__file__).resolve().parents[2])
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+from autogpt.bot import tgbot
+
 import os
 import logging
 import asyncio
@@ -43,6 +52,13 @@ user_semaphores = {}
 user_tasks = {}
 
 HELP_MESSAGE = """Commands:
+⚪ /start_autogpt – Start Auto-GPT
+⚪ /agree – Agree with AI's suggestion
+⚪ /disagree – Disagree with AI's suggestion
+⚪ /set_ai_config – Set AI configuration
+⚪ /restart_autogpt – Restart Auto-GPT
+⚪ /start_all – Start all processes
+⚪ /start – Start the bot
 ⚪ /retry – Regenerate last bot answer
 ⚪ /new – Start new dialog
 ⚪ /mode – Select chat mode
@@ -657,6 +673,13 @@ async def post_init(application: Application):
         BotCommand("/balance", "Show balance"),
         BotCommand("/settings", "Show settings"),
         BotCommand("/help", "Show help message"),
+        BotCommand("/start_autogpt", "Start Auto-GPT"),
+        BotCommand("/agree", "Agree with the response"),
+        BotCommand("/disagree", "Disagree with the response"),
+        BotCommand("/set_ai_config", "Set AI configuration"),
+        BotCommand("/restart_autogpt", "Restart Auto-GPT"),
+        BotCommand("/start_all", "Start all"),
+        BotCommand("/start", "Start"),
     ])
 
 def run_bot() -> None:
@@ -675,6 +698,13 @@ def run_bot() -> None:
         usernames = [x for x in config.allowed_telegram_usernames if isinstance(x, str)]
         user_ids = [x for x in config.allowed_telegram_usernames if isinstance(x, int)]
         user_filter = filters.User(username=usernames) | filters.User(user_id=user_ids)
+    application.add_handler(CommandHandler("start_autogpt", tgbot.start_autogpt, filters=user_filter))
+    application.add_handler(CommandHandler("agree", tgbot.agree, filters=user_filter))
+    application.add_handler(CommandHandler("disagree", tgbot.disagree, filters=user_filter))
+    application.add_handler(CommandHandler("set_ai_config", tgbot.set_ai_config, filters=user_filter))
+    application.add_handler(CommandHandler("restart_autogpt", tgbot.restart_autogpt, filters=user_filter))
+    application.add_handler(CommandHandler("start_all", tgbot.start_all, filters=user_filter))
+    application.add_handler(CommandHandler("start", tgbot.start, filters=user_filter))
 
     application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
     application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
